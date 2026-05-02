@@ -33,6 +33,12 @@ After fetch: normalize types/timestamps, sort by type weight then recency (**O(U
 - **Logging**: `logging-middleware/` — file-based structured logs and operation wrappers (no `console` / built-in console logging in app code).
 - **Stage 1**: `notification_app_be/src/stage1-priority-inbox.ts` plus `priority.ts` (normalize + sort), `fetch-notifications.ts`, `evaluation-auth.ts`.
 
+**Frontend (final stage)**
+
+- **App**: `notification_app_fe/` — Vite + React; **priority inbox** with configurable **N** (10 / 15 / 20), **Placement > Result > Event** then recency, **unread** modeled with client-side read ids (localStorage), **filter tabs** (All / Placement / Result / Event), **refresh** from GET `/evaluation-service/notifications` with Bearer token (saved in the browser for the evaluation only).
+- **Proxy**: dev server forwards `/evaluation-service` to the evaluation host so the SPA can call the protected route without browser CORS blocks.
+- **Logging**: `notification_app_fe/src/app-logger.ts` persists structured JSON in `localStorage` and supports export (no `console`).
+
 **Screenshots**
 
 After a successful run, capture the generated report file and/or the structured log tail showing the priority list, and store under `screenshots/` in the repository as required by the evaluation.
