@@ -3,9 +3,6 @@ import type { AppLogger } from "./logger";
 type AsyncFn<TArgs extends unknown[], TResult> = (...args: TArgs) => Promise<TResult>;
 type SyncFn<TArgs extends unknown[], TResult> = (...args: TArgs) => TResult;
 
-/**
- * Wraps an async operation with start/success/failure logging (no console).
- */
 export function withAsyncLogging<TArgs extends unknown[], TResult>(
   logger: AppLogger,
   operationName: string,
@@ -35,7 +32,6 @@ export function withAsyncLogging<TArgs extends unknown[], TResult>(
   };
 }
 
-/** Wraps a synchronous function with logging. */
 export function withSyncLogging<TArgs extends unknown[], TResult>(
   logger: AppLogger,
   operationName: string,

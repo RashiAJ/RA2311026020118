@@ -1,53 +1,42 @@
-# Notification System Design
+Notification System Design
 
-## Stage 1
+**Stage 1**
 
-### Problem
+**Problem**
 
 Students lose track of important items when notification volume is high. We need a **Priority Inbox** that always shows the top **N** most important **unread** notifications first, where **N** is configurable (e.g. 10, 15, 20).
 
-### Priority model
+**Priority model**
 
 - **Type weight** (strict ordering): **Placement** > **Result** > **Event**.
 - **Recency**: Among notifications of the **same** type, **newer** timestamps rank higher.
 
 Implementation compares notifications **lexicographically**: first by type weight (descending), then by `Timestamp` (descending). This matches “combination of weight and recency” without mixing units into an arbitrary linear formula.
 
-### Unread handling
+**Unread handling**
 
-The evaluation API returns the current batch of notifications. With **no separate read/unread flag** in the payload, Stage 1 treats every item as **unread** unless its ID appears in an in-memory **read set** (empty by default). Later stages can persist read state and pass the same set into the selector.
+The API payload has no read/unread flag; Stage 1 treats all normalized notifications as eligible for ranking.
 
-### Algorithms
+**Algorithms**
 
-**One-shot “top N” from a batch** (used after each fetch):
+After fetch: normalize types/timestamps, sort by type weight then recency (**O(U log U)**), take first **N** (**O(N)**). For a live stream without storing the full list, a min-heap of size **N** could update in **O(log N)** per item; the shipped Stage 1 code uses the batch path only.
 
-1. Filter to unread IDs.
-2. Sort by the comparator above — **O(U log U)** for U unread items.
-3. Take the first **N** — **O(N)**.
+**API integration**
 
-**Streaming / incremental top-K** (for continuously arriving notifications):
-
-- Maintain a **binary min-heap** of size at most **K** storing the current best candidates, ordered by a **scalar rank** derived from `(typeWeight, timestampMs)` so the heap root always holds the **lowest** priority among the K kept items.
-- For each new notification: if the heap has fewer than K items, insert; else if the new item **beats** the root, **replace** the root and restore heap — **O(log K)** per arrival.
-- After processing a stream, **sort** the K items with the same lexicographic comparator for display — **O(K log K)**.
-
-The batch sort and the heap approach produce the **same** top-K set when the stream is finite and order-independent; the heap is appropriate when we **cannot** or **should not** store all notifications (live feed, memory cap).
-
-### API integration
-
-- **GET** `http://20.207.122.201/evaluation-service/notifications`
-- **Protected route**: send header `Authorization: Bearer <token>` using environment variable **`NOTIFICATION_API_TOKEN`** (never committed).
+- **POST** `http://20.207.122.201/evaluation-service/register` — obtain **client id / secret** (saved via `npm run register` → `output/register-response.json`).
+- **POST** `http://20.207.122.201/evaluation-service/auth` — request body includes **email**, **name**, **rollNo**, **accessCode**, **clientID**, **clientSecret**; response includes **`access_token`**. Run **`npm run auth`** (same POST-only pattern as register) → **`output/auth-response.json`**.
+- **GET** `http://20.207.122.201/evaluation-service/notifications` — **protected**; **`Authorization: Bearer <access_token>`**. Stage 1 reads the token from **`output/auth-response.json`** or from **`NOTIFICATION_API_TOKEN`** / **`EVALUATION_ACCESS_TOKEN`** — it does not POST to `/auth` at runtime.
 - Optional **`PRIORITY_INBOX_N`**: defaults to `10`.
 
-### Code layout
+**Code layout**
 
 - **Logging**: `logging-middleware/` — file-based structured logs and operation wrappers (no `console` / built-in console logging in app code).
-- **Stage 1 runner**: `notification_app_be/src/stage1-priority-inbox.ts` — fetches, normalizes, computes top N, writes `output/stage1-priority-notifications.txt` for review and screenshots.
+- **Stage 1**: `notification_app_be/src/stage1-priority-inbox.ts` plus `priority.ts` (normalize + sort), `fetch-notifications.ts`, `evaluation-auth.ts`.
 
-### Screenshots
+**Screenshots**
 
 After a successful run, capture the generated report file and/or the structured log tail showing the priority list, and store under `screenshots/` in the repository as required by the evaluation.
 
-### Note on filename casing
+**Note on filename casing**
 
 On **case-insensitive** file systems (default Windows), `notification_system_design.md` and `Notification_System_Design.md` resolve to the same path. This repository keeps **`Notification_System_Design.md`** as the canonical design document to satisfy the Stage 1 naming requirement.

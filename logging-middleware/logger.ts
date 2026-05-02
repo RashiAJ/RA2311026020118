@@ -2,9 +2,6 @@ import * as fs from "fs";
 import * as path from "path";
 import type { LogLevel, LogRecord } from "./types";
 
-/**
- * Application logging facade. Persists structured records to disk — no console APIs.
- */
 export class AppLogger {
   private readonly logFilePath: string;
 
@@ -44,7 +41,6 @@ export class AppLogger {
     this.persist(this.baseRecord("error", message, context, metadata));
   }
 
-  /** Human-readable report block (for screenshots / review) — still via middleware only. */
   writeReportFile(reportPath: string, title: string, bodyLines: string[]): void {
     const dir = path.dirname(reportPath);
     fs.mkdirSync(dir, { recursive: true });

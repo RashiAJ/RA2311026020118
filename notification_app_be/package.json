@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "stage1": "tsx src/stage1-priority-inbox.ts",
+    "register": "tsx src/register-with-test-server.ts",
+    "auth": "tsx src/auth-with-test-server.ts",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {

@@ -1,4 +1,4 @@
-# Screenshots (Stage 1)
+Screenshots (Stage 1)
 
 Add screenshots here that show the **priority notifications** output from Stage 1, for example:
 
