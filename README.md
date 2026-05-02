@@ -8,3 +8,4 @@ Campus notification platform: **logging middleware**, **Stage 1** CLI (`notifica
 | Frontend | `notification_app_fe` | `npm install` → `npm run dev` (uses Vite proxy to the evaluation API) |
 
 Details: `notification_app_be/README.md`, `notification_app_fe/README.md`.
+<img width="1843" height="852" alt="image" src="https://github.com/user-attachments/assets/75a14957-0c37-4e1a-ade7-2d2dd72fd283" />
